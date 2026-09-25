@@ -1,0 +1,14 @@
+server\server.js
+server\node_modules
+pnpm-lock.yaml
+node_modules
+.env
+llm-server/.venv3
+venv3/
+llm-server\venv3
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.vercel
+.env*

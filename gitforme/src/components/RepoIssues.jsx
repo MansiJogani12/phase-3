@@ -1,0 +1,94 @@
+import React, { useState, useMemo } from 'react';
+
+export const IssuesView = ({ issues, onAddContext, onShowStory }) => {
+    const [filter, setFilter] = useState('open');
+
+    const openIssues = useMemo(() => {
+        if (!issues) return [];
+        if (Array.isArray(issues)) return issues.filter(i => i.state === 'open');
+        return issues.open || [];
+    }, [issues]);
+
+    const closedIssues = useMemo(() => {
+        if (!issues) return [];
+        if (Array.isArray(issues)) return issues.filter(i => i.state === 'closed');
+        return issues.closed || [];
+    }, [issues]);
+
+    const filteredIssues = filter === 'open' ? openIssues : closedIssues;
+
+    return (
+        <div>
+            <div className="flex items-center gap-2 mb-4 border-b-2 border-gray-200 pb-4">
+                <button
+                    onClick={() => setFilter('open')}
+                    className={`px-4 py-2 text-base font-bold rounded-lg border-2 transition-colors ${
+                        filter === 'open'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-black border-black hover:bg-gray-100'
+                    }`}
+                >
+                    Open ({openIssues.length})
+                </button>
+                <button
+                    onClick={() => setFilter('closed')}
+                    className={`px-4 py-2 text-base font-bold rounded-lg border-2 transition-colors ${
+                        filter === 'closed'
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-black border-black hover:bg-gray-100'
+                    }`}
+                >
+                    Closed ({closedIssues.length})
+                </button>
+            </div>
+            <ul className="space-y-3">
+                {filteredIssues.length > 0 ? (
+                    filteredIssues.map(issue => (
+                        <li key={issue.id || issue.number} className="p-4 bg-[#FEF9F2] border-2 border-black rounded-lg">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                                <div className="flex-grow min-w-0">
+                                    <a
+                                        href={issue.html_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-bold text-xl hover:text-amber-700 break-words"
+                                    >
+                                        {issue.title}
+                                    </a>
+                                    <p className="text-base text-gray-600">
+                                        #{issue.number} opened by {issue.user?.login || 'unknown'}
+                                    </p>
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 mt-1 flex-wrap items-start sm:items-center">
+                                    {onShowStory && (
+                                        <button
+                                            onClick={() => onShowStory(issue)}
+                                            className="px-3 py-1 bg-blue-200 text-blue-800 text-sm font-semibold border-2 border-blue-800 rounded-lg hover:bg-blue-300 transition-colors whitespace-nowrap"
+                                        >
+                                            View Story
+                                        </button>
+                                    )}
+                                    {onAddContext && (
+                                        <button
+                                            onClick={() => {
+                                                const contextStr = `--- ISSUE #${issue.number}: ${issue.title} ---\nAuthor: ${issue.user?.login || 'unknown'}\nURL: ${issue.html_url}\n\nDESCRIPTION:\n${issue.body || 'No description provided.'}\n----------------------------------\n`;
+                                                onAddContext(contextStr);
+                                            }}
+                                            className="px-3 py-1 bg-amber-200 text-amber-800 text-sm font-semibold border-2 border-amber-800 rounded-lg hover:bg-amber-300 transition-colors whitespace-nowrap"
+                                        >
+                                            Add Context
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </li>
+                    ))
+                ) : (
+                    <p className="text-gray-500 text-center py-8 text-lg">
+                        No {filter} issues found.
+                    </p>
+                )}
+            </ul>
+        </div>
+    );
+};
